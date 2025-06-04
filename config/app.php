@@ -84,6 +84,9 @@ return [
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
+    'mailer_dsn'=>env('MAILER_DSN','mailtrap.io'),
+    'backoffice_url' => env('BACKOFFICE_URL', 'http://localhost:5173/'),
+
     /*
     |--------------------------------------------------------------------------
     | Encryption Key

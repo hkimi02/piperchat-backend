@@ -25,14 +25,14 @@
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
-            background-color: #ffffff;
+            background-color: #f4f4f4;
             border-radius: 8px;
             border: 1px solid #dddddd;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .email-header {
-            background-color: #E38D7B;
+            background-color: #307B34;
             padding: 12px;
             color: #F9F0E3;
             text-align: left;
@@ -97,7 +97,7 @@
             text-align: center;
             margin: 10px 0;
             padding: 10px;
-            background-color: #F6DAD4;
+            background-color: #7dd97e;
             color: #000000;
             border-radius: 5px;
             display: inline-block;
