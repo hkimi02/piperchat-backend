@@ -29,6 +29,7 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at',
         'deleted_at',
         'profile_picture',
+        'organisation_id',
     ];
 
     /**
@@ -87,5 +88,12 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(FCMToken::class);
     }
+
+    public function organisation()
+    {
+        return $this->belongsTo(Organisation::class, 'organisation_id');
+    }
+
+
 
 }

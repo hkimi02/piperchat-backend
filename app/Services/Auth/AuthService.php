@@ -241,7 +241,8 @@ class AuthService
     }
 
 
-    public function loginAdmin($credentials): \Illuminate\Http\JsonResponse|string{
+    public function loginAdmin($credentials): \Illuminate\Http\JsonResponse|string
+    {
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
                 throw new JWTException('Invalid credentials');

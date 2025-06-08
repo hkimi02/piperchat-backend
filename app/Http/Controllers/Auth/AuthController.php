@@ -7,35 +7,83 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\FCMToken;
 use App\Services\Auth\AuthService;
+use App\Services\Organisation\OrganisationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
     protected AuthService $authService;
+    protected OrganisationService $organisationService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, OrganisationService $organisationService)
     {
         $this->authService = $authService;
+        $this->organisationService = $organisationService;
     }
 
-    /**
-     * @throws \Exception
-     */
-    public function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
-    {
-        $validatedData = $request->validated();
-        try {
-            $user = $this->authService->register($validatedData);
+
+
+public function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
+{
+    $validatedData = $request->validated();
+    try {
+        $userData = [
+            'first_name' => $validatedData['first_name'],
+            'last_name' => $validatedData['last_name'],
+            'email' => $validatedData['email'],
+            'password' => $validatedData['password'],
+            'role' => UserRole::USER->value,
+        ];
+
+        if (isset($validatedData['organisation_name'])) {
+            // Set user as admin and create user first
+            $userData['role'] = UserRole::ADMIN->value;
+            $user = $this->authService->register($userData);
+
+            // Create organisation with user as admin
+            $organisation = $this->organisationService->create([
+                'name' => $validatedData['organisation_name'],
+                'slug' => Str::slug($validatedData['organisation_name']),
+                'admin_id' => $user->id,
+            ]);
+            // Update user's organisation_id
+            $user->organisation_id = $organisation->id;
+            $user->save();
+
+            // Generate initial join code, valid for 7 days
+            $joinCode = $this->organisationService->generateJoinCode($organisation->id, 7);
+            $responseData = [
+                'user' => $user,
+                'organisation' => $organisation,
+                'join_code' => $joinCode,
+            ];
+        } elseif (isset($validatedData['join_code'])) {
+            // Join existing organisation with join code
+            $joinCode = $this->organisationService->validateJoinCode($validatedData['join_code']);
+            if (!$joinCode) {
+                throw new \Exception('Invalid or expired join code', 400);
+            }
+            $userData['organisation_id'] = $joinCode->organisation_id;
+            $user = $this->authService->register($userData);
+            $responseData = [
+                'user' => $user,
+                'organisation' => $joinCode->organisation,
+            ];
+        } else {
+            throw new \Exception('Either organisation_name or join_code is required', 400);
+        }
+
             return response()->json([
                 'message' => 'User registered successfully',
-                'data' => $user,
+                'data' => $responseData,
                 'statusCode' => 201,
                 'status' => 'ok'
             ], 201);
         } catch (\Exception $exception) {
-            $statusCode = $exception->getCode() ?: 500;
+            $statusCode = (int) ($exception->getCode() ?: 500);
             return response()->json([
                 'message' => $exception->getMessage(),
                 'statusCode' => $statusCode,
@@ -44,19 +92,21 @@ class AuthController extends Controller
         }
     }
 
-    public function verifyEmail(Request $request): \Illuminate\Http\JsonResponse{
+
+    public function verifyEmail(Request $request): \Illuminate\Http\JsonResponse
+    {
         $request->validate([
             'email' => 'required|email',
             'verification_code' => 'required|integer'
         ]);
-        try{
+        try {
             $this->authService->verifyEmail($request->email, $request->verification_code);
             return response()->json([
                 'message' => 'Email verified successfully',
                 'statusCode' => 200,
                 'status' => 'ok'
             ], 200);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -70,14 +120,14 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
         ]);
-        try{
+        try {
             $this->authService->resendVerificationCode($request->email);
             return response()->json([
                 'message' => 'Verification code resent successfully',
                 'statusCode' => 200,
                 'status' => 'ok'
             ], 200);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -91,14 +141,14 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email|exists:users,email',
         ]);
-        try{
+        try {
             $this->authService->forgetPassword($request->email);
             return response()->json([
                 'message' => 'Password reset link sent successfully',
                 'statusCode' => 200,
                 'status' => 'ok'
             ], 200);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -111,17 +161,17 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
-            'password' => ['required','string','min:8','confirmed','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,}$/'],
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^])[A-Za-z\d@$!%*?&#^]{8,}$/'],
             'pin' => 'required|digits:4',
         ]);
-        try{
+        try {
             $this->authService->resetPassword($request->email, $request->password, $request->pin);
             return response()->json([
                 'message' => 'Password reset successfully',
                 'statusCode' => 200,
                 'status' => 'ok'
             ], 200);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -136,14 +186,14 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
             'pin' => 'required|digits:4',
         ]);
-        try{
+        try {
             $this->authService->verifyResetPin($request->email, $request->pin);
             return response()->json([
                 'message' => 'Verification pin is valid',
                 'statusCode' => 200,
                 'status' => 'ok'
             ], 200);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -157,14 +207,14 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email|exists:users,email',
         ]);
-        try{
+        try {
             $this->authService->resendForgetPassword($request->email);
             return response()->json([
                 'message' => 'Verification code resent successfully',
                 'statusCode' => 200,
                 'status' => 'ok'
             ], 200);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -193,15 +243,16 @@ class AuthController extends Controller
         }
     }
 
-    public function loginAdmin(Request $request): \Illuminate\Http\JsonResponse{
+    public function loginAdmin(Request $request): \Illuminate\Http\JsonResponse
+    {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
-        try{
+        try {
             $credentials = $request->only('email', 'password');
             return $this->authService->loginAdmin($credentials);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -212,7 +263,7 @@ class AuthController extends Controller
 
     public function me(): \Illuminate\Http\JsonResponse
     {
-        try{
+        try {
             $user = Auth::user();
             return response()->json([
                 'message' => 'User retrieved successfully',
@@ -220,7 +271,7 @@ class AuthController extends Controller
                 'statusCode' => 200,
                 'status' => 'ok'
             ], 200);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'statusCode' => 500,
@@ -254,8 +305,8 @@ class AuthController extends Controller
             'fcm_token' => 'sometimes|string',
         ]);
         try {
-            $user=Auth::user();
-            if($request->has('fcm_token') && $user->role==UserRole::USER->value) {
+            $user = Auth::user();
+            if ($request->has('fcm_token') && $user->role == UserRole::USER->value) {
                 FCMToken::where('fcm_token', $request->input('fcm_token'))
                     ->where('user_id', $user->id)
                     ->delete();
@@ -274,6 +325,4 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
-
 }
