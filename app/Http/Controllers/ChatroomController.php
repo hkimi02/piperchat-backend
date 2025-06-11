@@ -10,5 +10,21 @@ class ChatroomController extends Controller
     {
         return $request->user()->organisation->chatrooms;
     }
-    //
+
+    public function store(Request $request)
+    {
+        if ($request->user()->role !== 'ADMIN') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $chatroom = $request->user()->organisation->chatrooms()->create([
+            'name' => $validated['name'],
+        ]);
+
+        return response()->json($chatroom, 201);
+    }
 }
