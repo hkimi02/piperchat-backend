@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Broadcast;
 use App\Models\User;
+use App\Models\Chatroom;
 use Illuminate\Support\Facades\Log;
 
 /*
@@ -33,8 +34,7 @@ Broadcast::channel('organisation.{id}', function (User $user, int $id) {
     return false;
 });
 
-
-
-Broadcast::channel('chat.{chatroom}', function ($user, \App\Models\Chatroom $chatroom) {
+Broadcast::channel('chat.{chatroom}', function (User $user, Chatroom $chatroom) {
+    // Ensure the user is part of the same organization as the chatroom
     return $user->organisation_id === $chatroom->organisation_id;
 });

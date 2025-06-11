@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 
 class ChatroomController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return auth()->user()->organisation->chatrooms;
+        return $request->user()->organisation->chatrooms;
     }
     //
 }

@@ -10,10 +10,10 @@ use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
-    public function index(Chatroom $chatroom)
+    public function index(Request $request, Chatroom $chatroom)
     {
         // Ensure the user is part of the organisation that owns the chatroom
-        if (auth()->user()->organisation_id !== $chatroom->organisation_id) {
+        if ($request->user()->organisation_id !== $chatroom->organisation_id) {
             abort(403);
         }
 
@@ -23,7 +23,7 @@ class MessageController extends Controller
     public function store(Request $request, Chatroom $chatroom)
     {
         // Ensure the user is part of the organisation that owns the chatroom
-        if (auth()->user()->organisation_id !== $chatroom->organisation_id) {
+        if ($request->user()->organisation_id !== $chatroom->organisation_id) {
             abort(403);
         }
 
@@ -31,7 +31,7 @@ class MessageController extends Controller
             'content' => 'required|string',
         ]);
 
-        $user = auth()->user();
+        $user = $request->user();
 
         $message = $chatroom->messages()->create([
             'user_id' => $user->id,
@@ -39,7 +39,7 @@ class MessageController extends Controller
         ]);
 
         // Broadcast the message to the chatroom channel
-        broadcast(new MessageSent($message->load('user')))->toOthers();
+        broadcast(new MessageSent($message->load('user')));
 
         return $message->load('user');
     }
