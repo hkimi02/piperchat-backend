@@ -32,3 +32,9 @@ Broadcast::channel('organisation.{id}', function (User $user, int $id) {
     }
     return false;
 });
+
+
+
+Broadcast::channel('chat.{chatroom}', function ($user, \App\Models\Chatroom $chatroom) {
+    return $user->organisation_id === $chatroom->organisation_id;
+});
