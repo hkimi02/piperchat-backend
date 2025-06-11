@@ -17,4 +17,9 @@ class Organisation extends Model
     {
         return $this->belongsTo(User::class, 'admin_id');
     }
+
+    public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(User::class);
+    }
 }

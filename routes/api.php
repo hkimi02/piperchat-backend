@@ -5,3 +5,4 @@ use Illuminate\Support\Facades\Route;
 
 
 require __DIR__ . '/api/authRoutes.php';
+require __DIR__ . '/api/organisation.php';

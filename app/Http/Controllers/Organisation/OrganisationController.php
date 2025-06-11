@@ -13,4 +13,10 @@ class OrganisationController extends Controller
     {
         $this->organisationService = $organisationService;
     }
+
+    public function getUsers(Request $request)
+    {
+        $users = $this->organisationService->getUsers($request->user());
+        return response()->json($users);
+    }
 }
