@@ -29,4 +29,15 @@ class OrganisationService
             ->first();
         return $joinCode;
     }
+
+    public function getUsers(\Illuminate\Contracts\Auth\Authenticatable $user): \Illuminate\Database\Eloquent\Collection
+    {
+        $organisation = $user->organisation;
+
+        if (!$organisation) {
+            return collect();
+        }
+
+        return $organisation->users;
+    }
 }
