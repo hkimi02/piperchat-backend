@@ -4,6 +4,7 @@ namespace App\Services\Organisation;
 
 use App\Models\JoinCode;
 use App\Models\Organisation;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class OrganisationService
@@ -39,5 +40,21 @@ class OrganisationService
         }
 
         return $organisation->users;
+    }
+
+    public function removeUser(Organisation $organisation, User $userToRemove): bool
+    {
+        // Ensure the user to remove belongs to the organisation
+        if ($userToRemove->organisation_id !== $organisation->id) {
+            return false;
+        }
+
+        // Prevent admin from being removed
+        if ($organisation->admin_id === $userToRemove->id) {
+            return false;
+        }
+
+        $userToRemove->organisation_id = null;
+        return $userToRemove->save();
     }
 }
