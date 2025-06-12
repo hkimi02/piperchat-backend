@@ -11,6 +11,7 @@ require __DIR__ . '/api/messages.php';
 require __DIR__ . '/api/chatrooms.php';
 require __DIR__ . '/api/project.php';
 require __DIR__ . '/api/tasks.php';
+require __DIR__ . '/api/calls.php';
 
 Route::middleware('auth:api')->group(function () {
     Broadcast::routes();
