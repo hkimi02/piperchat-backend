@@ -6,9 +6,9 @@ use App\Models\Organisation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Chatroom>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Project>
  */
-class ChatroomFactory extends Factory
+class ProjectFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,10 +18,9 @@ class ChatroomFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(2, true),
-            'type' => 'organisation', // Default to 'organisation' as per migration
+            'name' => fake()->sentence(3), // Generate a short name (e.g., "Project Management System")
+            'description' => fake()->optional()->paragraph(), // Nullable description
             'organisation_id' => Organisation::factory(), // Create or reference an Organisation
-            'project_id' => null, // Nullable, can be overridden for project chatrooms
         ];
     }
 }

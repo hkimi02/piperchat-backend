@@ -5,24 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Chatroom extends Model
+class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'type', 'organisation_id', 'project_id'];
+    protected $fillable = ['name', 'description', 'organisation_id'];
 
     public function organisation()
     {
         return $this->belongsTo(Organisation::class);
     }
 
-    public function project()
+    public function chatroom()
     {
-        return $this->belongsTo(Project::class);
+        return $this->hasOne(Chatroom::class);
     }
 
-    public function messages()
+    public function tasks()
     {
-        return $this->hasMany(Message::class);
+        return $this->hasMany(Task::class);
     }
 }

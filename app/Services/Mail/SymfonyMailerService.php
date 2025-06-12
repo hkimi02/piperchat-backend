@@ -82,4 +82,22 @@ class SymfonyMailerService
             ->html($content);
         $this->mailer->send($email);
     }
+
+    public function sendInvitationEmail(string $email, $organisation, string $joinCode): void
+    {
+        $content = View::make('emails.Invitation', [
+            'organisation_name' => $organisation->name,
+            'join_code' => $joinCode,
+            'app_name' => ucwords(config('app.name')),
+            'join_url' => config('app.frontend_url') . '/join?code=' . $joinCode,
+        ])->render();
+
+        $emailObj = (new Email())
+            ->from("doctourdoudou@blank.ovh")
+            ->to($email)
+            ->subject('Invitation to Join ' . $organisation->name . ' on ' . ucwords(config('app.name')))
+            ->html($content);
+
+        $this->mailer->send($emailObj);
+    }
 }

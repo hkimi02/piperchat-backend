@@ -5,4 +5,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:api')->prefix('organisation')->group(function () {
     Route::get('users', [OrganisationController::class, 'getUsers']);
+    Route::post('invite', [OrganisationController::class, 'inviteMember']);
 });
