@@ -14,11 +14,7 @@ class CallController extends Controller
     public function signal(Request $request, Chatroom $chatroom)
     {
         $user = $request->user();
-        $validated = $request->validate([
-            'payload' => 'required|array',
-        ]);
-
-        $payload = $validated['payload'];
+        $payload = $request->all();
         
         // Add the sender's ID to the payload so clients know who it's from
         $payload['from'] = $user->id;
