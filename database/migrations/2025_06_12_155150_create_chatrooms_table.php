@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('chatrooms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', ['organisation', 'project'])->default('organisation');
+            $table->enum('type', ['organisation', 'project', 'private'])->default('organisation');
             $table->foreignId('organisation_id')->constrained()->onDelete('cascade');
             $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();

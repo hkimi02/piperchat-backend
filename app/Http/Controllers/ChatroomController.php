@@ -2,13 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ChatroomController extends Controller
 {
     public function index(Request $request)
     {
-        return $request->user()->organisation->chatrooms ?? [];
+        $user = $request->user();
+        $organisation = $user->organisation;
+
+        if (!$organisation) {
+            return response()->json([]);
+        }
+
+        // Get organisation and project chatrooms
+        $organisationChatrooms = $organisation->chatrooms()
+            ->whereIn('type', ['organisation', 'project'])
+            ->get();
+
+        // Get private chatrooms the user is a member of
+        $privateChatrooms = $user->chatrooms()
+            ->where('type', 'private')
+            ->with('users')
+            ->get();
+
+        $allChatrooms = $organisationChatrooms->merge($privateChatrooms)->unique('id');
+
+        return response()->json($allChatrooms);
     }
 
     public function store(Request $request)
@@ -32,5 +53,48 @@ class ChatroomController extends Controller
         ]);
 
         return response()->json($chatroom, 201);
+    }
+
+    public function findOrCreatePrivateChatroom(Request $request)
+    {
+        $validated = $request->validate([
+            'userId' => 'required|exists:users,id',
+        ]);
+
+        $user = $request->user();
+        $otherUserId = $validated['userId'];
+
+        if ($user->id == $otherUserId) {
+            return response()->json(['message' => 'You cannot create a chat with yourself.'], 422);
+        }
+
+        $chatroom = $user->chatrooms()
+            ->where('type', 'private')
+            ->whereHas('users', function ($query) use ($otherUserId) {
+                $query->where('users.id', $otherUserId);
+            })
+            ->where(function ($query) {
+                $query->has('users', '=', 2);
+            })
+            ->with('users')
+            ->first();
+
+        if ($chatroom) {
+            $chatroom->load('users');
+            return response()->json($chatroom);
+        }
+
+        $otherUser = User::find($otherUserId);
+
+        $newChatroom = $user->organisation->chatrooms()->create([
+            'name' => 'Chat with ' . $otherUser->full_name,
+            'type' => 'private',
+            'organisation_id' => $user->organisation_id,
+        ]);
+
+        $newChatroom->users()->attach([$user->id, $otherUserId]);
+        $newChatroom->load('users');
+
+        return response()->json($newChatroom, 201);
     }
 }
