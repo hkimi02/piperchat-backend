@@ -38,3 +38,11 @@ Broadcast::channel('chat.{chatroom}', function (User $user, Chatroom $chatroom) 
     // Ensure the user is part of the same organization as the chatroom
     return $user->organisation_id === $chatroom->organisation_id;
 });
+
+Broadcast::channel('call.{chatroom}', function (User $user, Chatroom $chatroom) {
+    // Any user in the same organization can join the call for a given chatroom.
+    if ($user->organisation_id === $chatroom->organisation_id) {
+        return ['id' => $user->id, 'full_name' => $user->full_name];
+    }
+    return false;
+});
