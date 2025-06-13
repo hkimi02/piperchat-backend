@@ -101,9 +101,9 @@ class TaskController extends Controller
 
         if ($chatroom && $task->user) {
             $messageContent = match ($action) {
-                'created' => "Task '{$task->title}' was created by {$task->user->first_name} {$task->user->last_name}.",
-                'updated' => "Task '{$task->title}' was updated by {$task->user->first_name} {$task->user->last_name}.",
-                'deleted' => "Task '{$task->title}' was deleted by {$task->user->first_name} {$task->user->last_name}.",
+                'created' => "Tâche '{$task->title}' a été créée par {$task->user->first_name} {$task->user->last_name}.",
+                'updated' => "Tâche '{$task->title}' a été mise à jour par {$task->user->first_name} {$task->user->last_name}.",
+                'deleted' => "Tâche '{$task->title}' a été supprimée par {$task->user->first_name} {$task->user->last_name}.",
             };
 
             $message = Message::create([
