@@ -32,6 +32,7 @@ class File extends Model
         'type',
         'user_id',
         'project_id',
+        'chatroom_id',
         'message_id',
     ];
 
@@ -60,6 +61,14 @@ class File extends Model
     }
 
     /**
+     * Get the chatroom that the file belongs to.
+     */
+    public function chatroom(): BelongsTo
+    {
+        return $this->belongsTo(Chatroom::class);
+    }
+
+    /**
      * Get the file's URL.
      *
      * @return \Illuminate\Database\Eloquent\Casts\Attribute
@@ -70,10 +79,7 @@ class File extends Model
             get: fn () => URL::temporarySignedRoute(
                 'files.show',
                 now()->addMinutes(5),
-                [
-                    'projectId' => $this->project_id,
-                    'filename' => basename($this->path)
-                ]
+                ['file' => $this->id]
             )
         );
     }

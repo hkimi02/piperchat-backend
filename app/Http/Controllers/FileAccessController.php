@@ -10,26 +10,15 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class FileAccessController extends Controller
 {
     /**
-     * Retrieve a project file and stream it.
+     * Retrieve and stream a file.
      *
-     * @param string $projectId
-     * @param string $filename
-     * @return StreamedResponse|void
+     * @param \App\Models\File $file
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
-    public function getProjectFile(string $projectId, string $filename)
+    public function show(File $file): StreamedResponse
     {
-        // Construct the file path as stored by Laravel.
-        $filePath = "public/projects/{$projectId}/files/{$filename}";
-
-        // Find the file record in the database.
-        $file = File::where('path', $filePath)->first();
-
-        // If the file doesn't exist in the database or storage, abort.
-        if (!$file || !Storage::exists($filePath)) {
-            abort(404);
-        }
-
-        // Stream the file as a response.
-        return Storage::response($filePath);
+        // The 'signed' middleware has already verified the request.
+        // We can safely stream the file.
+        return Storage::response($file->path);
     }
 }

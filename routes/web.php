@@ -7,6 +7,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/storage/projects/{projectId}/files/{filename}', [FileAccessController::class, 'getProjectFile'])
+Route::get('/files/{file}', [FileAccessController::class, 'show'])
     ->middleware('signed')
     ->name('files.show');
