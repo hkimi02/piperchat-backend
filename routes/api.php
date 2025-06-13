@@ -12,6 +12,7 @@ require __DIR__ . '/api/chatrooms.php';
 require __DIR__ . '/api/project.php';
 require __DIR__ . '/api/tasks.php';
 require __DIR__ . '/api/calls.php';
+require __DIR__ . '/api/files.php';
 
 Route::middleware('auth:api')->group(function () {
     Broadcast::routes();
