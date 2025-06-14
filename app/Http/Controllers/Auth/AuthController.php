@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\Chatroom;
 use App\Models\FCMToken;
 use App\Services\Auth\AuthService;
 use App\Services\Organisation\OrganisationService;
@@ -48,6 +49,12 @@ public function register(RegisterRequest $request): \Illuminate\Http\JsonRespons
                 'name' => $validatedData['organisation_name'],
                 'slug' => Str::slug($validatedData['organisation_name']),
                 'admin_id' => $user->id,
+            ]);
+            //create organisation general chat room
+            Chatroom::create([
+            'name' => 'General',
+              'type'=>'organisation',
+                'organisation_id' => $organisation->id,
             ]);
             // Update user's organisation_id
             $user->organisation_id = $organisation->id;
