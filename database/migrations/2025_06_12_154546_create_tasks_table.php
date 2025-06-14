@@ -15,6 +15,9 @@ return new class extends Migration
             $table->string('status')->default('todo');
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->date('due_date')->nullable();
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
+            $table->json('tags')->nullable();
             $table->timestamps();
         });
     }

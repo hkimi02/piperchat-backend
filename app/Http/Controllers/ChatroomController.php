@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Organisation;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ChatroomController extends Controller
 {
@@ -42,14 +44,14 @@ class ChatroomController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:project,organisation',
             'project_id' => 'nullable|exists:projects,id',
-            'organisation_id' => 'required|exists:organisations,id',
         ]);
+        $organisation_id = Auth::user()->role === 'ADMIN' ? Organisation::where('admin_id',Auth::id()) : Auth::user()->organisation_id;
 
         $chatroom = $request->user()->organisation->chatrooms()->create([
             'name' => $validated['name'],
             'type' => $validated['type'],
             'project_id' => $validated['type'] === 'project' ? $validated['project_id'] : null,
-            'organisation_id' => $validated['organisation_id'],
+            'organisation_id' => $organisation_id,
         ]);
 
         return response()->json($chatroom, 201);

@@ -115,4 +115,46 @@ class TaskController extends Controller
             broadcast(new MessageSent($message))->toOthers();
         }
     }
+    public function statistics(Request $request)
+    {
+        $projectId = $request->query('project_id');
+
+        if (!$projectId) {
+            return response()->json(['error' => 'Project ID is required'], 400);
+        }
+
+        $tasks = Task::where('project_id', $projectId)
+            ->with(['user' => function ($query) {
+                $query->select('id', 'first_name', 'last_name');
+            }])
+            ->get()
+            ->map(function ($task) {
+                $task->tags = json_decode($task->tags, true) ?? [];
+                return $task;
+            });
+
+        // Aggregate tasks by status
+        $byStatus = [
+            'todo' => $tasks->where('status', 'todo')->count(),
+            'in-progress' => $tasks->where('status', 'in-progress')->count(),
+            'review' => $tasks->where('status', 'review')->count(),
+            'done' => $tasks->where('status', 'done')->count(),
+        ];
+
+        // Aggregate tasks by priority
+        $byPriority = [
+            'low' => $tasks->where('priority', 'low')->count(),
+            'medium' => $tasks->where('priority', 'medium')->count(),
+            'high' => $tasks->where('priority', 'high')->count(),
+            'urgent' => $tasks->where('priority', 'urgent')->count(),
+        ];
+
+        return response()->json([
+            'data' => [
+                'tasks' => $tasks,
+                'byStatus' => $byStatus,
+                'byPriority' => $byPriority,
+            ]
+        ]);
+    }
 }
