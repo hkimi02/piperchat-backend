@@ -92,7 +92,11 @@ class User extends Authenticatable implements JWTSubject
 
     public function organisation()
     {
+        if($this->role === UserRole::ADMIN->value) {
+            return $this->hasOne(Organisation::class, 'admin_id');
+        }else{
         return $this->belongsTo(Organisation::class, 'organisation_id');
+        }
     }
 
     public function messages()

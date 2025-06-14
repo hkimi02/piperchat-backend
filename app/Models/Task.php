@@ -9,8 +9,8 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'status', 'project_id', 'user_id'];
-
+    protected $fillable = ['title', 'description', 'status', 'project_id', 'user_id','due_date', 'priority', 'tags'];
+    protected $appends = ['project_name'];
     public function project()
     {
         return $this->belongsTo(Project::class);
@@ -19,5 +19,10 @@ class Task extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getProjectNameAttribute()
+    {
+        return $this->project ? $this->project->name : null;
     }
 }
