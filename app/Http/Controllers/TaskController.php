@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\Chatroom;
 use App\Models\Message;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Events\MessageSent;
@@ -47,7 +48,7 @@ class TaskController extends Controller
             'project_id' => $request->project_id,
             'user_id' => $request->user_id,
             'priority' => $request->priority,
-            'due_date' => $request->due_date,
+            'due_date' => Carbon::create($request->due_date),
             'tags' => json_encode($request->tags ?? []),
         ]);
 
@@ -76,7 +77,7 @@ class TaskController extends Controller
             'status' => $request->status,
             'user_id' => $request->user_id ?? $task->user_id,
             'priority' => $request->priority ?? $task->priority,
-            'due_date' => $request->due_date ?? $task->due_date,
+            'due_date' => Carbon::create($request->due_date) ?? $task->due_date,
             'tags' => json_encode($request->tags ?? json_decode($task->tags, true) ?? []),
         ]);
 

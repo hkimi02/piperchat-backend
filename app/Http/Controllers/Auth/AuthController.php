@@ -36,6 +36,7 @@ public function register(RegisterRequest $request): \Illuminate\Http\JsonRespons
             'last_name' => $validatedData['last_name'],
             'email' => $validatedData['email'],
             'password' => $validatedData['password'],
+            'organisation_id' => null, // Default to null, will be set later if needed
             'role' => UserRole::USER->value,
         ];
 
@@ -73,7 +74,7 @@ public function register(RegisterRequest $request): \Illuminate\Http\JsonRespons
             if (!$joinCode) {
                 throw new \Exception('Invalid or expired join code', 400);
             }
-            $userData['organisation_id'] = $joinCode->organisation_id;
+            $userData['organisation_id']=$joinCode->organisation_id;
             $user = $this->authService->register($userData);
             $responseData = [
                 'user' => $user,

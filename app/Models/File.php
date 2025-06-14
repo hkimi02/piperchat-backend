@@ -78,7 +78,7 @@ class File extends Model
         return Attribute::make(
             get: fn () => URL::temporarySignedRoute(
                 'files.show',
-                now()->addMinutes(5),
+                now()->addDays(7),
                 ['file' => $this->id]
             )
         );

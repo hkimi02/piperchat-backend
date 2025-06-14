@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\Chatroom;
 use App\Models\Project;
 use App\Models\Organisation;
 use Illuminate\Http\Request;
@@ -73,6 +74,12 @@ class ProjectController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'organisation_id' => $validated['organisation_id'],
+        ]);
+        Chatroom::create([
+            'name' => $project->name,
+            'organisation_id' => $project->organisation_id,
+            'type'=>'project',
+            'project_id' => $project->id,
         ]);
 
         return response()->json($project, 201);

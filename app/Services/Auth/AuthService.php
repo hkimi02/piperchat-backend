@@ -39,11 +39,11 @@ class AuthService
                 'last_name' => $validated['last_name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
-                'role' => UserRole::USER->value,
+                'role' => $validated['role'] ?? UserRole::USER->value,
                 'is_enabled' => true,
                 'verification_pin' => rand(1000, 9999),
+                'organisation_id' => $validated['organisation_id'] ?? null,
             ]);
-
             if (!$user) {
                 throw new \Exception('there was an error while creating the user');
             }
