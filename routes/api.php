@@ -14,6 +14,7 @@ require __DIR__ . '/api/tasks.php';
 require __DIR__ . '/api/calls.php';
 require __DIR__ . '/api/files.php';
 
+Route::post('/broadcasting/auth', [\App\Http\Controllers\BroadcastingController::class, 'authentificate']);
 Route::middleware('auth:api')->group(function () {
     Broadcast::routes();
 });
